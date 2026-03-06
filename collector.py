@@ -3,7 +3,6 @@ import subprocess
 def run(cmd: str) -> str:
     return subprocess.getoutput(cmd)
 
-
 def collect_data(alert: dict) -> dict:
     service = alert.get("service")
 
@@ -18,3 +17,4 @@ def collect_data(alert: dict) -> dict:
         "cpu": run("top -b -n1 | head -20"),
         "service": service_status
     }
+

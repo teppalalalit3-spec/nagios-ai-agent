@@ -1,0 +1,57 @@
+import os
+import requests
+from requests.auth import HTTPBasicAuth
+from dotenv import load_dotenv
+
+load_dotenv()
+
+NAGIOS_URL = os.getenv("NAGIOS_STATUSJSON_URL")  # .../statusjson.cgi
+NAGIOS_USER = os.getenv("NAGIOS_USER")
+NAGIOS_PASS = os.getenv("NAGIOS_PASS")
+
+
+def fetch_servicelist() -> dict:
+    """
+    Calls: statusjson.cgi?query=servicelist
+    Returns parsed JSON dict.
+    """
+    auth = HTTPBasicAuth(NAGIOS_USER, NAGIOS_PASS)
+    r = requests.get(NAGIOS_URL, params={"query": "servicelist"}, auth=auth, timeout=10)
+    r.raise_for_status()
+    return r.json()
+
+
+def extract_critical_services(servicelist_json: dict) -> list[dict]:
+    """
+    Extracts all services with state == 2 (CRITICAL).
+    Returns list of dicts: {host, service, state, output, perf_data}
+    """
+    critical = []
+
+    # Expected structure (common Nagios statusjson):
+    # data -> service_list -> host -> service -> fields
+    data = servicelist_json.get("data", {})
+    service_list = data.get("service_list", {})
+
+    for host, services in service_list.items():
+        # services is a dict keyed by service description
+        for svc_name, svc_obj in services.items():
+            # state might be "status" or "state" depending on build
+            state = svc_obj.get("status", svc_obj.get("state"))
+
+            # Normalize to int if it’s string
+            try:
+                state = int(state)
+            except Exception:
+                continue
+
+            if state == 2:
+                critical.append({
+                    "host": host,
+                    "service": svc_name,
+                    "state": "CRITICAL",
+                    "output": svc_obj.get("plugin_output", svc_obj.get("output", "")),
+                    "perf_data": svc_obj.get("perf_data", "")
+                })
+
+    return critical

@@ -1,0 +1,35 @@
+from fastapi import FastAPI
+from dotenv import load_dotenv
+
+from collector import collect_data
+from analyzer import analyze
+from slackbot import send_slack
+
+from nagios_client import fetch_servicelist, extract_critical_services
+
+load_dotenv()
+app = FastAPI()
+
+
+@app.post("/scan")
+async def scan_nagios_and_alert():
+    """
+    Poll Nagios servicelist JSON.
+    For each CRITICAL service (state==2) send Slack analysis.
+    """
+    try:
+        raw = fetch_servicelist()
+        critical_services = extract_critical_services(raw)
+
+        sent = 0
+        for alert in critical_services:
+            # This is the same "act and send" pipeline you had before
+            logs = collect_data(alert)
+            ai_result = analyze(alert, logs)
+            send_slack(ai_result)
+            sent += 1
+
+        return {"status": "ok", "critical_found": len(critical_services), "messages_sent": sent}
+
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}

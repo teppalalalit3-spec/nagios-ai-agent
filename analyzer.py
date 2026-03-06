@@ -4,6 +4,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
+
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 SYSTEM_PROMPT = """
@@ -34,13 +35,19 @@ Format:
 }
 """
 
+
 def summarize(data):
+    """
+    Safely summarize collected metrics.
+    """
+
     return {
-        "disk": data["disk"][:800],
-        "cpu": data["cpu"][:800],
-        "service": data["service"][:800],
-        "logs": data["journal"][-1500:]
+        "disk": str(data.get("disk", ""))[:800],
+        "cpu": str(data.get("cpu", ""))[:800],
+        "service": str(data.get("service", ""))[:800],
+        "logs": str(data.get("journal", ""))[-1500:]
     }
+
 
 def analyze(alert, raw):
 
@@ -49,14 +56,29 @@ def analyze(alert, raw):
         "metrics_summary": summarize(raw)
     }
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        temperature=0,
-        messages=[
-            {"role":"system","content": SYSTEM_PROMPT},
-            {"role":"user","content": json.dumps(payload)}
-        ]
-    )
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            temperature=0,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": json.dumps(payload)}
+            ]
+        )
 
-    return json.loads(response.choices[0].message.content)
+        content = response.choices[0].message.content
 
+        return json.loads(content)
+
+    except Exception as e:
+        print("AI ERROR:", str(e))
+
+        # Safe fallback so pipeline doesn't break
+        return {
+            "root_cause": "AI analysis failed",
+            "pattern": "unknown",
+            "prediction": "unknown",
+            "recommended_action": "manual investigation",
+            "playbook_type": "unknown",
+            "confidence": 0.1
+        }
