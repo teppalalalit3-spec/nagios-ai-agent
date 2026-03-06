@@ -62,7 +62,7 @@ http://localhost:8000
 
 ![Nagios Alert](Nagios-alert.jpeg)
 
-![Slack Notification](Slack-Notication.jpeg)
+![Slack Notification](Slack-Notification.jpeg)
 
 
 🔒 **Safety Controls**
