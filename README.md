@@ -64,11 +64,11 @@ http://localhost:8000
 
 ### Nagios Alert Trigger
 
-![Nagios Alert](screenshots/nagios-alert.jpeg)
+![Nagios Alert](Screenshots/nagios-alert.jpeg)
 
 ### Slack Notification
 
-![Slack Notification](screenshots/slack-notication.jpeg)
+![Slack Notification](Screenshots/slack-notication.jpeg)
 
 
 🔒 **Safety Controls**
