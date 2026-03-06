@@ -1,10 +1,5 @@
 nagios-ai-agent
-│
-├── screenshots
-│     ├── nagios-alert.png
-│     ├── slack-notification.png
-│     ├── remediation-log.png
-│
-├── app.py
-├── slackbot.py
-├── README.md
+ ├── screenshots
+ │     ├── nagios-alert.jpeg
+ │     └── slack-notication.jpeg
+ └── README.md
