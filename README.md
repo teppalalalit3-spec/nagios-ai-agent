@@ -60,9 +60,9 @@ python3 -m uvicorn server:app --host 0.0.0.0 --port 8000
 Server will start on:
 http://localhost:8000
 
-![Nagios Alert](nagios-alert.jpeg)
+![Nagios Alert](Nagios-alert.jpeg)
 
-![Slack Notification](slack-notication.jpeg)
+![Slack Notification](Slack-Notication.jpeg)
 
 
 🔒 **Safety Controls**
